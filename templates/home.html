@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="static/css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Scraper les Vidéos YouTube</title>
+    <style>
+        /* Menu fixe */
+                 .menu a.active {
+        background-color: #ff0000; /* Couleur rouge */
+        color: #fff; /* Couleur du texte en blanc */
+        font-weight: bold; /* Mettre le texte en gras */
+    }
+        .menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #ffffff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0;
+            z-index: 1000;
+        }
+
+        .menu a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .menu a:hover {
+            background-color: #ff0000; /* Couleur rouge */
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+   <!-- Menu fixe -->
+<div class="menu">
+    <a href="{{ url_for('Accueil') }}" class="{{ 'active' if request.path == url_for('Accueil') else '' }}">Accueil</a>
+    <a href="{{ url_for('home') }}" class="{{ 'active' if request.path == url_for('home') else '' }}">Scraping</a>
+    <a href="{{ url_for('trending_analysis') }}" class="{{ 'active' if request.path == url_for('trending_analysis') else '' }}">Vidéos en Tendance</a>
+    <a href="{{ url_for('link_analysis') }}" class="{{ 'active' if request.path == url_for('link_analysis') else '' }}">Vidéo par Lien</a>
+</div>
+    <div class="container">
+        <!-- Messages Flash -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for message in messages %}
+                        <p class="flash-message">{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Boutons d'onglets pour choisir la carte -->
+        <div class="tabs">
+            <button class="tab-button active" onclick="showCard('trending')">Scraper Vidéos en Tendance</button>
+            <button class="tab-button" onclick="showCard('link')">Scraper par Lien</button>
+        </div>
+
+        <!-- Carte pour les vidéos en tendance -->
+        <div class="card" id="trending-card">
+            <h3 class="title">You<span class="highlight">Tube</span> Scraper</h3>
+            <p class="description">Spécifiez vos critères pour scraper les vidéos tendances et analyser les commentaires.</p>
+            <form id="scraper-form" method="POST" action="/scraper_trending">
+                <!-- Nombre de vidéos -->
+                <div class="form-group form-group-icon">
+                    <label for="num_videos" class="form-label">Nombre de vidéos <i class="fas fa-info-circle" title="Entrez le nombre de vidéos à scraper (1 à 50)"></i></label>
+                    <input type="number" class="form-input" id="num_videos" name="num_videos" min="1" max="50" required>
+                </div>
+      <!-- Nombre de commentaires -->
+                <div class="form-group form-group-icon">
+                    <label for="num_comments" class="form-label">Nombre de commentaires  <i class="fas fa-comments" title="Entrez le nombre maximum de commentaires à récupérer"></i></label>
+                    <input type="number" class="form-input" id="num_comments" name="num_comments" min="1" required>
+                </div>
+                <!-- Période -->
+                <div class="form-group form-group-icon">
+                    <label for="periode" class="form-label">Période <i class="fas fa-calendar-alt" title="Choisissez une période pour les vidéos (Dernières 24h, Semaine, Mois)"></i></label>
+                    <div class="custom-select-wrapper">
+                        <select class="form-input" id="periode" name="periode">
+                            <option value="jour">Dernières 24h</option>
+                            <option value="semaine">Semaine</option>
+                            <option value="mois">Mois</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Nom de la chaîne -->
+                <div class="form-group form-group-icon">
+                    <label for="channel_name" class="form-label">Nom de la chaîne (facultatif) <i class="fas fa-tv" title="Entrez le nom de la chaîne YouTube si vous souhaitez restreindre la recherche à une chaîne spécifique"></i></label>
+                    <input type="text" class="form-input" id="channel_name" name="channel_name">
+                </div>
+
+                <!-- Mot-clé -->
+                <div class="form-group form-group-icon">
+                    <label for="keyword" class="form-label">Mot-clé / Sujet d'actualité (facultatif) <i class="fas fa-key" title="Entrez un mot-clé ou sujet spécifique pour affiner les résultats"></i></label>
+                    <input type="text" class="form-input" id="keyword" name="keyword">
+                </div>
+
+
+
+                <!-- Bouton Scraper -->
+                <button type="submit" class="btn-scraper">Scraper</button>
+            </form>
+        </div>
+
+        <!-- Carte pour scraper par lien -->
+        <div class="card" id="link-card" style="display: none;">
+            <h3 class="title">Scraper par <span class="highlight">Lien</span></h3>
+            <p class="description">Entrez le lien de la vidéo YouTube pour scraper les commentaires.</p>
+            <form id="link-form" method="POST" action="/scraper_link">
+                <!-- Lien de la vidéo -->
+                <div class="form-group form-group-icon">
+                    <label for="video_link" class="form-label">Lien de la vidéo <i class="fas fa-link" title="Entrez le lien de la vidéo YouTube"></i></label>
+                    <input type="url" class="form-input" id="video_link" name="video_link" required>
+                </div>
+
+                <!-- Nombre de commentaires -->
+                <div class="form-group form-group-icon">
+                    <label for="num_comments_link" class="form-label">Nombre de commentaires  <i class="fas fa-comments" title="Entrez le nombre maximum de commentaires à récupérer"></i></label>
+                    <input type="number" class="form-input" id="num_comments_link" name="num_comments_link" min="1" required>
+                </div>
+
+                <!-- Bouton Scraper -->
+                <button type="submit" class="btn-scraper">Scraper</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function showCard(card) {
+            // Gérer l'affichage des cartes
+            const trendingCard = document.getElementById('trending-card');
+            const linkCard = document.getElementById('link-card');
+
+            if (card === 'trending') {
+                trendingCard.style.display = 'block';
+                linkCard.style.display = 'none';
+                document.querySelector('.tab-button.active').classList.remove('active');
+                document.querySelectorAll('.tab-button')[0].classList.add('active');
+            } else if (card === 'link') {
+                trendingCard.style.display = 'none';
+                linkCard.style.display = 'block';
+                document.querySelector('.tab-button.active').classList.remove('active');
+                document.querySelectorAll('.tab-button')[1].classList.add('active');
+            }
+        }
+    </script>
+</body>
+</html>

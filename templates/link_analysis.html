@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Analyse de Lien - Table Dynamique</title>
+
+    <!-- DataTables + jQuery -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+
+    <!-- FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Wordcloud2.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/wordcloud2.js/1.1.0/wordcloud2.min.js"></script>
+
+    <style>
+        /* ... vos styles habituels ... */
+        .menu a.active {
+            background-color: #ff0000;
+            color: #fff;
+            font-weight: bold;
+        }
+        .menu {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%;
+            background-color: #ffffff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0;
+            z-index: 1000;
+        }
+        .menu a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .menu a:hover {
+            background-color: #ff0000;
+            color: #fff;
+        }
+
+        #videosTable {
+            width: 98%;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+        #videosTable th, #videosTable td {
+            text-align: center;
+            vertical-align: middle;
+        }
+        .dataTables_wrapper .dataTables_length {
+            margin-bottom: 10px;
+            margin-right: 40px;
+        }
+        .dataTables_wrapper .dataTables_filter {
+            margin-bottom: 10px;
+            margin-left: 40px;
+        }
+        .dataTables_wrapper .dataTables_info {
+            margin-top: 10px;
+            margin-right: 40px;
+        }
+        .dataTables_wrapper .dataTables_paginate {
+            margin-top: 10px;
+            margin-left: 40px;
+        }
+
+        .icon-btn {
+            font-size: 18px;
+            color: #ff0000;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        .icon-btn:hover {
+            color: #cc0000;
+        }
+        .icon-details {
+            color: #666666;
+        }
+        .icon-details:hover {
+            color: #444444;
+        }
+
+        .popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+        }
+        .popup-content {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 600px;
+            margin: 50px auto;
+            position: relative;
+            height: 85vh;
+            overflow-y: auto;
+        }
+        .popup-content h3 {
+            margin-bottom: 20px;
+        }
+        .popup-content .close-btn {
+            position: absolute;
+            top: 10px; right: 10px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        .comments-container {
+            max-height: 546px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .comment {
+            border-bottom: 1px solid #ddd;
+            padding: 10px 0;
+        }
+        .comment:last-child {
+            border-bottom: none;
+        }
+        .sentiment-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .sentiment-container div {
+            margin: 5px 0;
+        }
+
+        /* Pour les pie charts par vidéo */
+        .chart-box {
+            width: 250px;
+            height: 250px;
+            text-align: center;
+        }
+        .single-chart {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        /* Conteneur pour les bar charts (globaux) */
+        .global-charts-container {
+            width: 70%;
+            margin: 40px auto;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Menu -->
+    <div class="menu">
+        <a href="{{ url_for('Accueil') }}"
+           class="{{ 'active' if request.path == url_for('Accueil') else '' }}">
+          Accueil
+        </a>
+        <a href="{{ url_for('home') }}"
+           class="{{ 'active' if request.path == url_for('home') else '' }}">
+          Scraping
+        </a>
+        <a href="{{ url_for('trending_analysis') }}"
+           class="{{ 'active' if request.path == url_for('trending_analysis') else '' }}">
+          Vidéos en Tendance
+        </a>
+        <a href="{{ url_for('link_analysis') }}"
+           class="{{ 'active' if request.path == url_for('link_analysis') else '' }}">
+          Analyse de Lien
+        </a>
+    </div>
+    <br><br><br><br>
+
+    <!-- Table dynamique -->
+    <table id="videosTable" class="display">
+        <thead>
+            <tr>
+                <th>Titre</th>
+                <th>Chaîne</th>
+                <th>Date de Publication</th>
+                <th>Vues</th>
+                <th>URL</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for video in videos %}
+            <tr>
+                <td>{{ video.title }}</td>
+                <td>{{ video.channel_name }}</td>
+                <td>{{ video.published_at }}</td>
+                <td>{{ video.views }}</td>
+                <td><a href="{{ video.url }}" target="_blank">Voir Vidéo</a></td>
+                <td>
+                    <i class="fas fa-info-circle icon-btn icon-details"
+                       onclick="showPopup('{{ video.video_id }}')"
+                       title="Détails"></i>
+                    <i class="fas fa-chart-pie icon-btn"
+                       onclick="showChartPopup('{{ video.video_id }}')"
+                       title="Afficher Graphiques"></i>
+
+                    <!-- AJOUT : L'icône Cloud pour Word Cloud par vidéo -->
+                    <i class="fas fa-cloud icon-btn"
+                       onclick="showWordCloudVideo('{{ video.video_id }}')"
+                       title="Word Cloud par Vidéo"></i>
+                </td>
+            </tr>
+
+            <!-- Popup : Détails -->
+            <div id="popup-{{ video.video_id }}" class="popup-overlay">
+                <div class="popup-content">
+                    <span class="close-btn" onclick="closePopup('{{ video.video_id }}')">&times;</span>
+                    <h3>Commentaires pour : {{ video.title }}</h3>
+                    <div class="sentiment-container">
+                        <div><strong>Sentiment:</strong>
+                            Positif: {{ video.sentiment_summary["positive"] }}%,
+                            Neutre: {{ video.sentiment_summary["neutral"] }}%,
+                            Négatif: {{ video.sentiment_summary["negative"] }}%
+                        </div>
+                    </div>
+                    <div class="comments-container">
+                        {% for comment in video.comments %}
+                        <div class="comment">
+                            <p><strong>Commentaire :</strong> {{ comment.comment_text }}</p>
+                            <p><strong>Sentiment :</strong> {{ comment.sentiment }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Popup : Pie charts par vidéo -->
+            <div id="chart-popup-{{ video.video_id }}" class="popup-overlay">
+                <div class="popup-content">
+                    <span class="close-btn" onclick="closeChartPopup('{{ video.video_id }}')">&times;</span>
+                    <h3>Graphique de sentiment : {{ video.title }}</h3>
+                    <div class="single-chart">
+                        <div class="chart-box">
+                            <canvas id="sentimentChart-{{ video.video_id }}" width="300" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Div caché pour stocker les données (pour chaque vidéo) -->
+            <div id="chart-data-{{ video.video_id }}"
+                 data-positive="{{ video.sentiment_summary['positive'] }}"
+                 data-neutral="{{ video.sentiment_summary['neutral'] }}"
+                 data-negative="{{ video.sentiment_summary['negative'] }}"
+                 style="display:none;">
+            </div>
+
+            <!-- AJOUT : Popup Word Cloud par vidéo -->
+            <div id="wordcloud-popup-{{ video.video_id }}" class="popup-overlay">
+                <div class="popup-content">
+                    <span class="close-btn" onclick="closeWordCloudVideo('{{ video.video_id }}')">&times;</span>
+                    <h3>Word Cloud : {{ video.title }}</h3>
+                    <div id="wordcloud-canvas-{{ video.video_id }}"
+                         style="width: 600px; height: 400px; margin: 0 auto; border: 1px solid #ccc;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- AJOUT : Div caché contenant la liste (mot, freq) en JSON pour CETTE vidéo -->
+            <div id="wordfreq-data-{{ video.video_id }}" style="display: none;"
+                 data-wordfreq='{{ video.word_freq_per_video_json|safe }}'>
+            </div>
+
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Conteneur pour les bar charts globaux (pourcentages) -->
+    <div class="global-charts-container">
+        <h2>Distribution globale des sentiments</h2>
+
+        <!-- Graphique des sentiments -->
+        <canvas id="sentiment-global-chart" width="500" height="300"></canvas>
+    </div>
+
+    <!-- Conteneur pour le word cloud global -->
+    <div class="global-charts-container">
+        <h2>Nuage de mots (Word Cloud) - GLOBAL</h2>
+        <div id="wordcloud" style="width: 900px; height: 700px; margin: 0 auto; border: 1px solid #ccc;">
+            <!-- Word Cloud global apparaîtra ici -->
+        </div>
+    </div>
+
+    <script>
+        // 1) Initialisation DataTable
+        $(document).ready(function() {
+            $('#videosTable').DataTable();
+        });
+
+        // -----------------------------
+        //  2) Popups "Détails"
+        // -----------------------------
+        function showPopup(videoId) {
+            document.getElementById(`popup-${videoId}`).style.display = 'block';
+        }
+        function closePopup(videoId) {
+            document.getElementById(`popup-${videoId}`).style.display = 'none';
+        }
+
+        // -----------------------------
+        //  3) Popups "Charts par vidéo"
+        // -----------------------------
+        function showChartPopup(videoId) {
+            document.getElementById(`chart-popup-${videoId}`).style.display = 'block';
+            createChart(videoId);
+        }
+        function closeChartPopup(videoId) {
+            document.getElementById(`chart-popup-${videoId}`).style.display = 'none';
+        }
+
+        // -----------------------------
+        //  4) Création PieChart (par vidéo)
+        // -----------------------------
+        function createChart(videoId) {
+            const dataDiv = document.getElementById(`chart-data-${videoId}`);
+
+            const positive = parseFloat(dataDiv.dataset.positive);
+            const neutral  = parseFloat(dataDiv.dataset.neutral);
+            const negative = parseFloat(dataDiv.dataset.negative);
+
+            const ctx = document.getElementById(`sentimentChart-${videoId}`).getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Positif', 'Neutre', 'Négatif'],
+                    datasets: [{
+                        data: [positive, neutral, negative],
+                        backgroundColor: ['#4CAF50', '#FFC107', '#F44336']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        // -----------------------------
+        //  5) Bar Chart Global
+        // -----------------------------
+
+        const globalPositive = {{ global_percentages["positive"] }};
+        const globalNegative = {{ global_percentages["negative"] }};
+
+        const ctxGlobal = document.getElementById('sentiment-global-chart').getContext('2d');
+        new Chart(ctxGlobal, {
+            type: 'bar',
+            data: {
+                labels: ['Sentiments'],
+                datasets: [
+                    {
+                        label: 'Positif',
+                        data: [globalPositive],
+                        backgroundColor: 'rgba(75, 192, 192, 0.6)'
+                    },
+                    {
+                        label: 'Négatif',
+                        data: [globalNegative],
+                        backgroundColor: 'rgba(255, 99, 132, 0.6)'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.dataset.label || '';
+                                const val   = context.parsed.y || 0;
+                                return label + ': ' + val + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // -----------------------------
+        //  6) Word Cloud GLOBAL
+        // -----------------------------
+        const pyWordFreqList = [
+          {% for word, freq in word_freq_list %}
+            ["{{ word }}", {{ freq }}],
+          {% endfor %}
+        ];
+
+        WordCloud(document.getElementById('wordcloud'), {
+          list: pyWordFreqList,
+          gridSize: 10,
+          weightFactor: 3,
+          fontFamily: 'Roboto, sans-serif',
+          color: function() {
+              const colors = [
+                  '#f44336', '#9c27b0', '#3f51b5',
+                  '#03a9f4', '#009688', '#8bc34a',
+                  '#ffeb3b', '#ff9800'
+              ];
+              return colors[Math.floor(Math.random() * colors.length)];
+          },
+          backgroundColor: '#ffffff',
+          rotateRatio: 0,
+          minSize: 10
+        });
+
+        // -----------------------------
+        //  7) Word Cloud PAR VIDÉO
+        // -----------------------------
+        function showWordCloudVideo(videoId) {
+            // Ouvrir le popup
+            document.getElementById(`wordcloud-popup-${videoId}`).style.display = 'block';
+
+            const dataDiv = document.getElementById(`wordfreq-data-${videoId}`);
+            const wordList = JSON.parse(dataDiv.getAttribute("data-wordfreq"));
+
+            WordCloud(document.getElementById(`wordcloud-canvas-${videoId}`), {
+                list: wordList,
+                gridSize: 10,
+                weightFactor: 17,
+                fontFamily: 'Roboto, sans-serif',
+                color: 'random-dark',
+                backgroundColor: '#fff',
+                rotateRatio: 0,
+                minSize: 10
+            });
+        }
+
+        function closeWordCloudVideo(videoId) {
+            document.getElementById(`wordcloud-popup-${videoId}`).style.display = 'none';
+        }
+    </script>
+</body>
+</html>

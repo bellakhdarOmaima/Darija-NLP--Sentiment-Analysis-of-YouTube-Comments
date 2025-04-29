@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Word Cloud Minimal Test</title>
+
+  <!-- Inclusions (CDN) -->
+  <!-- J'utilise le même CDN que dans ton ancien projet qui marchait. -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/wordcloud2.js/1.1.0/wordcloud2.min.js"></script>
+
+  <style>
+    #mywordcloud {
+      width: 600px;
+      height: 400px;
+      border: 1px solid #ccc;
+      margin: 40px auto;
+    }
+  </style>
+</head>
+<body>
+
+<h2 style="text-align:center;">Word Cloud Minimal Test</h2>
+
+<div id="mywordcloud"></div>
+
+<script>
+  // Exemple : On simule quelques mots/fréquences
+  // Mets ici tes vraies données, par ex. "[(mot, freq), (mot2, freq2), ...]"
+  const wordList = [
+    ["الله", 183],
+    ["من", 152],
+    ["و", 125],
+    ["على", 104],
+    ["في", 103],
+    ["مبروك", 37],
+    ["لي", 30]
+    // ...
+  ];
+
+  // On appelle WordCloud sur le div #mywordcloud
+  WordCloud(document.getElementById('mywordcloud'), {
+    list: wordList,
+    gridSize: 10,
+    weightFactor: 2,
+    color: 'random-dark',
+    backgroundColor: '#ffffff'
+  });
+</script>
+
+</body>
+</html>

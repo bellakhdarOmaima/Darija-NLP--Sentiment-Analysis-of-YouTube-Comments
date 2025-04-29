@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="static/css/styles.css">
+    <title>Commentaires pour la Vidéo</title>
+   <style>
+    body {
+        background-color: #f0f2f5;
+        font-family: 'Roboto', sans-serif;
+        margin: 0;
+        padding: 20px;
+    }
+
+ .container {
+    max-width: 800px; /* Largeur reste inchangée */
+    margin: 0 auto;
+    background: #ffffff;
+    padding: 15px; /* Réduction du padding pour réduire la hauteur globale */
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-height: 770px; /* Limite la longueur si le contenu est trop grand */
+    overflow-y: auto; /* Permet le défilement si le contenu dépasse la hauteur maximale */
+}
+
+
+    .title {
+        font-size: 2em;
+        font-weight: bold;
+        text-align: left; /* Aligné à gauche */
+        margin-bottom: 20px;
+    }
+
+    .description {
+        text-align: left; /* Aligné à gauche */
+        font-size: 1em;
+        margin-bottom: 20px;
+    }
+
+    .description a {
+        color: #007BFF;
+        text-decoration: none;
+    }
+
+    .description a:hover {
+        text-decoration: underline;
+    }
+
+    .sentiment-distribution {
+        text-align: left; /* Aligné à gauche */
+        margin-bottom: 20px;
+    }
+
+    .sentiment-distribution ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .sentiment-distribution li {
+        margin-bottom: 5px;
+    }
+
+    .comments-section {
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 20px;
+        background-color: #fafafa;
+        max-height: 400px; /* Limite la hauteur avec défilement */
+        overflow-y: auto;
+        text-align: left; /* Aligné à gauche */
+    }
+
+    .comments-list {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .comment-item {
+        background-color: #f9f9f9;
+        margin: 10px 0;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        font-size: 1em;
+        line-height: 1.5;
+    }
+
+    .comment-item strong {
+        font-weight: bold;
+    }
+
+    .btn-back {
+        display: block;
+        margin: 30px auto;
+        text-decoration: none;
+        color: #ffffff;
+        background-color: #ff0000;
+        padding: 10px 30px;
+        font-weight: 500;
+        border-radius: 5px;
+        text-align: center;
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        width: fit-content;
+    }
+
+    .btn-back:hover {
+        background-color: #cc0000;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    }
+</style>
+
+</head>
+<body>
+    <div class="container">
+        <h3 class="title">Commentaires pour la Vidéo</h3>
+        <p class="description">Lien de la vidéo : <a href="{{ video_link }}" target="_blank">{{ video_link }}</a></p>
+
+        <!-- Distribution des sentiments -->
+        <div class="sentiment-distribution">
+            <h4>Distribution des sentiments :</h4>
+            <ul>
+                <li>Positif : {{ sentiment_percentages['positive'] }}%</li>
+                <li>Neutre : {{ sentiment_percentages['neutral'] }}%</li>
+                <li>Négatif : {{ sentiment_percentages['negative'] }}%</li>
+            </ul>
+        </div>
+
+        <!-- Liste des commentaires -->
+        <div class="comments-section">
+           <ul class="comments-list">
+    {% for item in comments %}
+    <li class="comment-item">
+        <p><strong>Commentaire :</strong> {{ item['comment_text'] }}</p>
+        <p><strong>Sentiment :</strong> {{ item['sentiment'] }}</p>
+    </li>
+    {% endfor %}
+</ul>
+
+        </div>
+
+        <!-- Bouton retour -->
+        <a href="{{ url_for('home') }}" class="btn-back">Retour à la page principale</a>
+    </div>
+</body>
+</html>

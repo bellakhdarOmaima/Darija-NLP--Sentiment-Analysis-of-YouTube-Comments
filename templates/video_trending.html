@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vidéos en Tendance</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 90%;
+            max-width: 800px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            overflow: hidden;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .video-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .video-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background-color: #f9f9f9;
+            transition: all 0.3s ease; /* Transition pour un effet doux */
+        }
+        /* Effet hover */
+        .video-item:hover {
+            background-color: #ffffff; /* Change la couleur de fond */
+            transform: translateY(-5px); /* Légère élévation */
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* Ajout d'une ombre */
+        }
+        .video-item img {
+            width: 150px;
+            height: auto;
+            border-radius: 4px;
+            margin-right: 15px;
+            transition: transform 0.3s ease; /* Pour un zoom fluide */
+        }
+        /* Zoom sur l'image en hover */
+        .video-item:hover img {
+            transform: scale(1.05); /* Zoom */
+        }
+        .video-details {
+            flex: 1;
+        }
+        .video-details a {
+            text-decoration: none;
+            color: #000;
+            font-weight: bold;
+            font-size: 16px;
+            display: block;
+            margin-bottom: 5px;
+            transition: color 0.3s ease; /* Transition pour un effet doux */
+        }
+        /* Changement de couleur du lien au survol */
+        .video-details a:hover {
+            color: #ff0000;
+        }
+        .video-details p {
+            margin: 0;
+            color: #555;
+            font-size: 14px;
+        }
+        .btn-view-comments {
+            padding: 10px 15px;
+            background-color: #ff0000;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: bold;
+            margin-left: auto;
+            align-self: center;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+        .btn-view-comments:hover {
+            background-color: #cc0000; /* Rouge plus sombre au survol */
+            transform: scale(1.1); /* Zoom sur le bouton */
+        }
+        .btn-view-comments:focus {
+            outline: none;
+        }
+        .btn-back {
+            display: block;
+            margin: 20px auto;
+            text-decoration: none;
+            color: #ff0000;
+            font-weight: bold;
+            text-align: center;
+            transition: color 0.3s ease;
+        }
+        .btn-back:hover {
+            text-decoration: underline;
+            color: #cc0000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Vidéos Tendance sur YouTube</h2>
+        <div class="video-list">
+            {% for video in videos %}
+                <div class="video-item">
+                    <img src="{{ video.thumbnail }}" alt="Thumbnail de la vidéo">
+                    <div class="video-details">
+                        <a href="{{ video.url }}" target="_blank">{{ video.title }}</a>
+                        <p>{{ video.views }} vues</p>
+                    </div>
+                    <a href="{{ url_for('get_comments_trending', video_id=video.video_id) }}?num_comments={{ num_comments }}" class="btn-view-comments">
+                        Voir les commentaires
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+        <a href="{{ url_for('home') }}" class="btn-back">Retour à la page d'accueil</a>
+    </div>
+</body>
+</html>

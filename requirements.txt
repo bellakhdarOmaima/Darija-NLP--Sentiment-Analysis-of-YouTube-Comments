@@ -1,0 +1,6 @@
+
+Flask==3.1.0
+transformers==4.47.1
+torch==2.5.1
+google-api-python-client==2.153.0
+pymongo==4.10.1

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
+    <title>Analyse de Sentiment</title>
+    <style>
+        /* Reset CSS */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            overflow-x: hidden;
+        }
+                         .menu a.active {
+        background-color: #ff0000; /* Couleur rouge */
+        color: #fff; /* Couleur du texte en blanc */
+        font-weight: bold; /* Mettre le texte en gras */
+    }
+
+        .menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #ffffff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0;
+            z-index: 1000;
+        }
+
+        .menu a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .menu a:hover {
+            background-color: #ff0000; /* Couleur rouge */
+            color: #fff;
+        }
+
+        /* Contenu principal */
+        .container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f9f9f9;
+            padding: 0 20px;
+        }
+
+        .hero-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1200px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .hero-text {
+            flex: 1;
+            padding: 40px;
+            text-align: left;
+            animation: fadeInLeft 1s ease;
+        }
+
+        .hero-text h1 {
+            font-size: 2.5em;
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .hero-text p {
+            font-size: 1.2em;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .hero-text .btn {
+            padding: 15px 30px;
+            font-size: 1em;
+            font-weight: bold;
+            color: #fff;
+            background-color: #ff0000;
+            border-radius: 50px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .hero-text .btn:hover {
+            background-color: #e60000;
+            box-shadow: 0 8px 20px rgba(255, 0, 0, 0.3);
+        }
+
+        .hero-image {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #ffffff; /* Fond blanc pour correspondre à la carte */
+            padding: 40px;
+            animation: fadeInRight 1s ease;
+        }
+
+        .hero-image img {
+            width: 250px;
+            max-width: 100%;
+            animation: pop 1.2s ease;
+        }
+
+        /* Animations */
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pop {
+            0% {
+                transform: scale(0.9);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="menu">
+    <a href="{{ url_for('Accueil') }}" class="{{ 'active' if request.path == url_for('Accueil') else '' }}">Accueil</a>
+    <a href="{{ url_for('home') }}" class="{{ 'active' if request.path == url_for('home') else '' }}">Scraping</a>
+    <a href="{{ url_for('trending_analysis') }}" class="{{ 'active' if request.path == url_for('trending_analysis') else '' }}">Vidéos en Tendance</a>
+    <a href="{{ url_for('link_analysis') }}" class="{{ 'active' if request.path == url_for('link_analysis') else '' }}">Vidéo par Lien</a>
+</div>
+    <!-- Contenu principal -->
+    <div class="container">
+        <div class="hero-section">
+            <div class="hero-text">
+                <h1>🎥 Analyse de Sentiment</h1>
+                <p>Explorez les SENTIMENTS derrière les vidéos tendances au Maroc.</p>
+                   <p>
+                    Ce projet vous permet d'identifier les sentiments exprimées dans les commentaires,
+                    pour mieux comprendre l'impact et la popularité des vidéos.</p>
+                   <br>
+                <a href="{{ url_for('home') }}" class="btn"> Commencez l'Analyse</a>
+            </div>
+            <div class="hero-image">
+                <img src="static/images/youtube.svg" alt="YouTube Logo">
+            </div>
+        </div>
+    </div>
+</body>
+</html>

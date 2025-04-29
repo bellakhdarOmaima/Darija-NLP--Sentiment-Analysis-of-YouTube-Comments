@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <title>Distribution des sentiments</title>
+    <style>
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap; /* Pour permettre un retour à la ligne si nécessaire */
+            justify-content: center;
+            gap: 20px; /* Espacement entre les cartes */
+        }
+
+        .card {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            width: 370px; /* Largeur augmentée */
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .title {
+            font-size: 1.5em;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .highlight {
+            color: #ff0000;
+        }
+
+        .sentiment-distribution {
+            margin-bottom: 10px;
+            text-align: left;
+            font-size: 0.9em;
+        }
+
+        .sentiment-distribution ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .comments-section {
+            max-height: 300px; /* Hauteur maximale pour la boîte défilante */
+            overflow-y: auto; /* Permet le défilement vertical */
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 10px;
+            background-color: #fafafa;
+        }
+
+        .comments-section ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .comment-item {
+            text-align: left;
+            background-color: #f9f9f9;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+     .btn-back {
+        display: block; /* Changer de inline-block à block pour s'assurer du centrage */
+        margin: 40px auto; /* Centrage horizontal et espacement vertical */
+        text-decoration: none;
+        color: #ffffff;
+        background-color: #ff0000; /* Rouge du thème */
+        padding: 10px 30px; /* Ajout d'un espace interne */
+        font-weight: 500;
+        border-radius: 5px;
+        text-align: center;
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Ombre douce */
+        width: fit-content; /* Ajuste la largeur pour s'adapter au contenu */
+    }
+
+    .btn-back:hover {
+        background-color: #cc0000;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Ombre plus marquée */
+    }
+
+
+        .page-title {
+            text-align: center;
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+  <h1 class="page-title">Distribution des sentiments</h1>
+
+  <div class="container">
+      <!-- Carte pour BERT -->
+      <div class="card">
+          <h3 class="title">BERT</h3>
+          <div class="sentiment-distribution">
+              <ul>
+                  <li>Positif : {{ sentiment_percentages_bert['positive'] }}%</li>
+                  <li>Neutre : {{ sentiment_percentages_bert['neutral'] }}%</li>
+                  <li>Négatif : {{ sentiment_percentages_bert['negative'] }}%</li>
+              </ul>
+          </div>
+          <div class="comments-section">
+              {% for comment, label in comments_bert %}
+                  <div class="comment-item">
+                      <strong>Commentaire :</strong> {{ comment }} <br>
+                      <strong>Label :</strong> {{ label }}
+                  </div>
+              {% endfor %}
+          </div>
+      </div>
+
+      <!-- Carte pour CNN -->
+      <div class="card">
+          <h3 class="title">CNN</h3>
+          <div class="sentiment-distribution">
+              <ul>
+                  <li>Positif : {{ sentiment_percentages_cnn['positive'] }}%</li>
+                  <li>Négatif : {{ sentiment_percentages_cnn['negative'] }}%</li>
+              </ul>
+          </div>
+          <div class="comments-section">
+              {% for comment, label in comments_cnn %}
+                  <div class="comment-item">
+                      <strong>Commentaire :</strong> {{ comment }} <br>
+                      <strong>Label :</strong> {{ label }}
+                  </div>
+              {% endfor %}
+          </div>
+      </div>
+
+      <!-- Carte pour LSTM-CNN -->
+      <div class="card">
+          <h3 class="title">LSTM-CNN </h3>
+          <div class="sentiment-distribution">
+              <ul>
+                  <li>Positif : {{ sentiment_percentages_lstm['positive'] }}%</li>
+                  <li>Négatif : {{ sentiment_percentages_lstm['negative'] }}%</li>
+              </ul>
+          </div>
+          <div class="comments-section">
+              {% for comment, label in comments_lstm %}
+                  <div class="comment-item">
+                      <strong>Commentaire :</strong> {{ comment }} <br>
+                      <strong>Label :</strong> {{ label }}
+                  </div>
+              {% endfor %}
+          </div>
+      </div>
+  </div>
+
+  <a href="{{ url_for('trending_videos') }}" class="btn-back">Retour aux vidéos tendances</a>
+</body>
+</html>
